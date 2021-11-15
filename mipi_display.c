@@ -33,30 +33,39 @@ SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <bsp.h> // for sleep etc
 // #include <string.h>
 // #include <stdatomic.h>
 
-#include <hardware/spi.h>
-#include <hardware/dma.h>
-#include <hardware/gpio.h>
+#include <spi.h>
+#include <fpioa.h>
+#include <sysctl.h>
+#include <gpiohs.h>
 
 #include "mipi_dcs.h"
 #include "mipi_display.h"
 
-static int dma_channel;
+//static int dma_channel;
 
 static void mipi_display_write_command(const uint8_t command)
 {
     /* Set DC low to denote incoming command. */
-    gpio_put(MIPI_DISPLAY_PIN_DC, 0);
+    //gpio_put(MIPI_DISPLAY_PIN_DC, 0);
+    gpiohs_set_pin(MIPI_DISPLAY_GPIO_DC, GPIO_PV_LOW);
 
     /* Set CS low to reserve the SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 0);
+    //gpio_put(MIPI_DISPLAY_PIN_CS, 0);
 
-    spi_write_blocking(spi0, &command, 1);
+    //spi_write_blocking(spi0, &command, 1);
+    spi_init(MIPI_DISPLAY_SPI_CHANNEL, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
+    spi_init_non_standard(MIPI_DISPLAY_SPI_CHANNEL, 8, 0, 0, SPI_AITM_AS_FRAME_FORMAT);
+    spi_send_data_normal_dma(
+        DMAC_CHANNEL0, MIPI_DISPLAY_SPI_CHANNEL, MIPI_DISPLAY_SPI_SLAVE_SELECT, (uint8_t *)(&command), 1, SPI_TRANS_CHAR
+    );
 
     /* Set CS high to ignore any traffic on SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 1);
+    //gpio_put(MIPI_DISPLAY_PIN_CS, 1);
 }
 
 static void mipi_display_write_data(const uint8_t *data, size_t length)
@@ -68,45 +77,51 @@ static void mipi_display_write_data(const uint8_t *data, size_t length)
     };
 
     /* Set DC high to denote incoming data. */
-    gpio_put(MIPI_DISPLAY_PIN_DC, 1);
+    //gpio_put(MIPI_DISPLAY_PIN_DC, 1);
+    gpiohs_set_pin(MIPI_DISPLAY_GPIO_DC, GPIO_PV_HIGH);
 
     /* Set CS low to reserve the SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 0);
+    //gpio_put(MIPI_DISPLAY_PIN_CS, 0);
 
-    spi_write_blocking(spi0, data, length);
+    //spi_write_blocking(spi0, data, length);
+    spi_init(MIPI_DISPLAY_SPI_CHANNEL, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
+    spi_init_non_standard(MIPI_DISPLAY_SPI_CHANNEL, 8, 0, 0, SPI_AITM_AS_FRAME_FORMAT);
+    spi_send_data_normal_dma(
+        DMAC_CHANNEL0, MIPI_DISPLAY_SPI_CHANNEL, MIPI_DISPLAY_SPI_SLAVE_SELECT, data, length, SPI_TRANS_CHAR
+    );
 
     /* Set CS high to ignore any traffic on SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 1);
+    //gpio_put(MIPI_DISPLAY_PIN_CS, 1);
 }
 
-static void mipi_display_write_data_dma(const uint8_t *buffer, size_t length)
-{
-    if (0 == length) {
-        return;
-    };
+// static void mipi_display_write_data_dma(const uint8_t *buffer, size_t length)
+// {
+//     if (0 == length) {
+//         return;
+//     };
 
-    /* Set DC high to denote incoming data. */
-    gpio_put(MIPI_DISPLAY_PIN_DC, 1);
+//     /* Set DC high to denote incoming data. */
+//     gpio_put(MIPI_DISPLAY_PIN_DC, 1);
 
-    /* Set CS low to reserve the SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 0);
+//     /* Set CS low to reserve the SPI bus. */
+//     gpio_put(MIPI_DISPLAY_PIN_CS, 0);
 
-    dma_channel_wait_for_finish_blocking(dma_channel);
-    dma_channel_set_trans_count(dma_channel, length, false);
-    dma_channel_set_read_addr(dma_channel, buffer, true);
-}
+//     dma_channel_wait_for_finish_blocking(dma_channel);
+//     dma_channel_set_trans_count(dma_channel, length, false);
+//     dma_channel_set_read_addr(dma_channel, buffer, true);
+// }
 
-static void mipi_display_dma_init()
-{
-    hagl_hal_debug("%s\n", "initialising DMA.");
+// static void mipi_display_dma_init()
+// {
+//     hagl_hal_debug("%s\n", "initialising DMA.");
 
-    dma_channel = dma_claim_unused_channel(true);
-    dma_channel_config channel_config = dma_channel_get_default_config(dma_channel);
-    channel_config_set_transfer_data_size(&channel_config, DMA_SIZE_8);
-    channel_config_set_dreq(&channel_config, DREQ_SPI0_TX);
-    dma_channel_set_config(dma_channel, &channel_config, false);
-    dma_channel_set_write_addr(dma_channel, &spi_get_hw(spi0)->dr, false);
-}
+//     dma_channel = dma_claim_unused_channel(true);
+//     dma_channel_config channel_config = dma_channel_get_default_config(dma_channel);
+//     channel_config_set_transfer_data_size(&channel_config, DMA_SIZE_8);
+//     channel_config_set_dreq(&channel_config, DREQ_SPI0_TX);
+//     dma_channel_set_config(dma_channel, &channel_config, false);
+//     dma_channel_set_write_addr(dma_channel, &spi_get_hw(spi0)->dr, false);
+// }
 
 static void mipi_display_read_data(uint8_t *data, size_t length)
 {
@@ -154,30 +169,52 @@ static void mipi_display_set_address(uint16_t x1, uint16_t y1, uint16_t x2, uint
     mipi_display_write_command(MIPI_DCS_WRITE_MEMORY_START);
 }
 
+static void mipi_display_power_init() {
+    hagl_hal_debug("%s\n", "Initialising power banks.");
+
+    /* TODO: figure out where these come from. */
+    sysctl_set_power_mode(SYSCTL_POWER_BANK6, SYSCTL_POWER_V18);
+    sysctl_set_power_mode(SYSCTL_POWER_BANK7, SYSCTL_POWER_V18);
+}
+
+static void mipi_display_io_mux_init() {
+    hagl_hal_debug("%s\n", "Initialising IO mux.");
+
+    fpioa_set_function(MIPI_DISPLAY_PIN_CS, FUNC_SPI0_SS3); // 36 LCD_CS (bank 6)
+    fpioa_set_function(MIPI_DISPLAY_PIN_RST, FUNC_GPIOHS0 + MIPI_DISPLAY_GPIO_RST); // 37 LCD_RST (bank 6)
+    fpioa_set_function(MIPI_DISPLAY_PIN_DC, FUNC_GPIOHS0 + MIPI_DISPLAY_GPIO_DC); // 38 LCD_DC (bank 6)
+    fpioa_set_function(MIPI_DISPLAY_PIN_CLK, FUNC_SPI0_SCLK); // 39 LCD_WR (bank 6)
+    sysctl_set_spi0_dvp_data(1);
+}
+
 static void mipi_display_spi_master_init()
 {
     hagl_hal_debug("%s\n", "Initialising SPI.");
 
-    gpio_set_function(MIPI_DISPLAY_PIN_DC, GPIO_FUNC_SIO);
-    gpio_set_dir(MIPI_DISPLAY_PIN_DC, GPIO_OUT);
+    // gpio_set_function(MIPI_DISPLAY_PIN_DC, GPIO_FUNC_SIO);
+    // gpio_set_dir(MIPI_DISPLAY_PIN_DC, GPIO_OUT);
+    gpiohs_set_drive_mode(MIPI_DISPLAY_GPIO_DC, GPIO_DM_OUTPUT);
+    gpiohs_set_pin(MIPI_DISPLAY_GPIO_DC, GPIO_PV_HIGH);
 
-    gpio_set_function(MIPI_DISPLAY_PIN_CS, GPIO_FUNC_SIO);
-    gpio_set_dir(MIPI_DISPLAY_PIN_CS, GPIO_OUT);
+    // gpio_set_function(MIPI_DISPLAY_PIN_CS, GPIO_FUNC_SIO);
+    // gpio_set_dir(MIPI_DISPLAY_PIN_CS, GPIO_OUT);
 
-    gpio_set_function(MIPI_DISPLAY_PIN_CLK,  GPIO_FUNC_SPI);
-    gpio_set_function(MIPI_DISPLAY_PIN_MOSI, GPIO_FUNC_SPI);
+    // gpio_set_function(MIPI_DISPLAY_PIN_CLK,  GPIO_FUNC_SPI);
+    // gpio_set_function(MIPI_DISPLAY_PIN_MOSI, GPIO_FUNC_SPI);
 
-    if (MIPI_DISPLAY_PIN_MISO > 0) {
-        gpio_set_function(MIPI_DISPLAY_PIN_MISO, GPIO_FUNC_SPI);
-    }
+    // if (MIPI_DISPLAY_PIN_MISO > 0) {
+    //     gpio_set_function(MIPI_DISPLAY_PIN_MISO, GPIO_FUNC_SPI);
+    // }
 
     /* Set CS high to ignore any traffic on SPI bus. */
-    gpio_put(MIPI_DISPLAY_PIN_CS, 1);
+    // gpio_put(MIPI_DISPLAY_PIN_CS, 1);
 
-    spi_init(spi0, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
-    uint32_t baud = spi_set_baudrate(spi0, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
+    // spi_init(spi0, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
+    // uint32_t baud = spi_set_baudrate(spi0, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
+    //uint32_t baud = spi_set_clk_rate(MIPI_DISPLAY_SPI_CHANNEL, 20000000);
+    uint32_t bps = spi_set_clk_rate(MIPI_DISPLAY_SPI_CHANNEL, 10000000);
 
-    hagl_hal_debug("Baudrate is set to %d.\n", baud);
+    hagl_hal_debug("Clock rate is set to %d Hz.\n", bps);
 }
 
 void mipi_display_init()
@@ -194,24 +231,31 @@ void mipi_display_init()
     hagl_hal_debug("%s\n", "Initialising triple buffered display.");
 #endif /* HAGL_HAL_USE_DOUBLE_BUFFER */
 
-    /* Init the spi driver. */
+    mipi_display_io_mux_init();
+    mipi_display_power_init();
     mipi_display_spi_master_init();
-    sleep_ms(100);
+
+    usleep(100000);
 
     /* Reset the display. */
     if (MIPI_DISPLAY_PIN_RST > 0) {
-        gpio_set_function(MIPI_DISPLAY_PIN_RST, GPIO_FUNC_SIO);
-        gpio_set_dir(MIPI_DISPLAY_PIN_RST, GPIO_OUT);
+        // gpio_set_function(MIPI_DISPLAY_PIN_RST, GPIO_FUNC_SIO);
+        // gpio_set_dir(MIPI_DISPLAY_PIN_RST, GPIO_OUT);
+        gpiohs_set_drive_mode(MIPI_DISPLAY_GPIO_RST, GPIO_DM_OUTPUT);
 
-        gpio_put(MIPI_DISPLAY_PIN_RST, 0);
-        sleep_ms(100);
-        gpio_put(MIPI_DISPLAY_PIN_RST, 1);
-        sleep_ms(100);
+        // gpio_put(MIPI_DISPLAY_PIN_RST, 0);
+        // sleep_ms(100);
+        // gpio_put(MIPI_DISPLAY_PIN_RST, 1);
+        // sleep_ms(100);
+        gpiohs_set_pin(MIPI_DISPLAY_GPIO_RST, GPIO_PV_LOW);
+        usleep(100000);
+        gpiohs_set_pin(MIPI_DISPLAY_GPIO_RST, GPIO_PV_HIGH);
+        usleep(100000);
     }
 
     /* Send minimal init commands. */
     mipi_display_write_command(MIPI_DCS_SOFT_RESET);
-    sleep_ms(200);
+    msleep(200);
 
     mipi_display_write_command(MIPI_DCS_SET_ADDRESS_MODE);
     mipi_display_write_data(&(uint8_t){MIPI_DISPLAY_ADDRESS_MODE}, 1);
@@ -223,29 +267,29 @@ void mipi_display_init()
     mipi_display_write_command(MIPI_DCS_ENTER_INVERT_MODE);
     hagl_hal_debug("%s\n", "Inverting display.");
 #else
-    mipi_display_write_command(MIPI_DCS_EXIT_INVERT_MODE);
+     mipi_display_write_command(MIPI_DCS_EXIT_INVERT_MODE);
 #endif
 
     mipi_display_write_command(MIPI_DCS_EXIT_SLEEP_MODE);
-    sleep_ms(200);
+    msleep(200);
 
     mipi_display_write_command(MIPI_DCS_SET_DISPLAY_ON);
-    sleep_ms(200);
+    msleep(200);
 
     /* Enable backlight */
-    if (MIPI_DISPLAY_PIN_BL > 0) {
-        gpio_set_function(MIPI_DISPLAY_PIN_BL, GPIO_FUNC_SIO);
-        gpio_set_dir(MIPI_DISPLAY_PIN_BL, GPIO_OUT);
+    // if (MIPI_DISPLAY_PIN_BL > 0) {
+    //     gpio_set_function(MIPI_DISPLAY_PIN_BL, GPIO_FUNC_SIO);
+    //     gpio_set_dir(MIPI_DISPLAY_PIN_BL, GPIO_OUT);
 
-        gpio_put(MIPI_DISPLAY_PIN_BL, 1);
-    }
+    //     gpio_put(MIPI_DISPLAY_PIN_BL, 1);
+    // }
 
     /* Set the default viewport to full screen. */
     mipi_display_set_address(0, 0, MIPI_DISPLAY_WIDTH - 1, MIPI_DISPLAY_HEIGHT - 1);
 
 #ifdef HAGL_HAS_HAL_BACK_BUFFER
 #ifdef HAGL_HAL_USE_DMA
-    mipi_display_dma_init();
+    //mipi_display_dma_init();
 #endif /* HAGL_HAL_USE_DMA */
 #endif /* HAGL_HAS_HAL_BACK_BUFFER */
 }
@@ -310,5 +354,5 @@ void mipi_display_ioctl(const uint8_t command, uint8_t *data, size_t size)
 
 void mipi_display_close()
 {
-    spi_deinit(spi0);
+    //spi_deinit(spi0);
 }

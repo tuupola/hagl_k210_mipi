@@ -56,27 +56,32 @@ typedef uint16_t color_t;
 /* Default config is ok for Pimoroni Pico Display Pack. When compiling */
 /* you can override these by including an user config header file first. */
 /* https://shop.pimoroni.com/products/pico-display-pack */
+#define MIPI_DISPLAY_GPIO_DC        (2)
+#define MIPI_DISPLAY_GPIO_RST       (3)
+
+#define MIPI_DISPLAY_SPI_CHANNEL             (0)
+#define MIPI_DISPLAY_SPI_SLAVE_SELECT        (3)
 
 #ifndef MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ
 #define MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ     (64 * 1000 * 1000)
 #endif
 #ifndef MIPI_DISPLAY_PIN_CS
-#define MIPI_DISPLAY_PIN_CS         (17)
+#define MIPI_DISPLAY_PIN_CS         (36) // xx
 #endif
 #ifndef MIPI_DISPLAY_PIN_DC
-#define MIPI_DISPLAY_PIN_DC         (16)
+#define MIPI_DISPLAY_PIN_DC         (38) // xx
 #endif
 #ifndef MIPI_DISPLAY_PIN_RST
-#define MIPI_DISPLAY_PIN_RST        (-1)
+#define MIPI_DISPLAY_PIN_RST        (37) // xx
 #endif
 #ifndef MIPI_DISPLAY_PIN_BL
-#define MIPI_DISPLAY_PIN_BL         (20)
+#define MIPI_DISPLAY_PIN_BL         (-1)
 #endif
 #ifndef MIPI_DISPLAY_PIN_CLK
-#define MIPI_DISPLAY_PIN_CLK        (18)
+#define MIPI_DISPLAY_PIN_CLK        (39) // xx
 #endif
 #ifndef MIPI_DISPLAY_PIN_MOSI
-#define MIPI_DISPLAY_PIN_MOSI       (19)
+#define MIPI_DISPLAY_PIN_MOSI       (-1)
 #endif
 #ifndef MIPI_DISPLAY_PIN_MISO
 #define MIPI_DISPLAY_PIN_MISO       (-1)
@@ -88,27 +93,20 @@ typedef uint16_t color_t;
 #define MIPI_DISPLAY_ADDRESS_MODE   (MIPI_DCS_ADDRESS_MODE_RGB)
 #endif
 
-/* Default to invert because Pimoroni Pico Display Pack needs it. */
-#ifndef MIPI_DISPLAY_INVERT
-#define MIPI_DISPLAY_INVERT
-#elif MIPI_DISPLAY_INVERT == 0
-#undef MIPI_DISPLAY_INVERT
-#endif
-
 #ifndef MIPI_DISPLAY_WIDTH
-#define MIPI_DISPLAY_WIDTH          (135)
+#define MIPI_DISPLAY_WIDTH          (240)
 #endif
 #ifndef MIPI_DISPLAY_HEIGHT
-#define MIPI_DISPLAY_HEIGHT         (240)
+#define MIPI_DISPLAY_HEIGHT         (320)
 #endif
 #ifndef MIPI_DISPLAY_DEPTH
 #define MIPI_DISPLAY_DEPTH          (16)
 #endif
 #ifndef MIPI_DISPLAY_OFFSET_X
-#define MIPI_DISPLAY_OFFSET_X       (52)
+#define MIPI_DISPLAY_OFFSET_X       (0)
 #endif
 #ifndef MIPI_DISPLAY_OFFSET_Y
-#define MIPI_DISPLAY_OFFSET_Y       (40)
+#define MIPI_DISPLAY_OFFSET_Y       (0)
 #endif
 
 #define DISPLAY_WIDTH               (MIPI_DISPLAY_WIDTH)
