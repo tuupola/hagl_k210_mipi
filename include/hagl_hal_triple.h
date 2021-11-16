@@ -24,8 +24,8 @@ SOFTWARE.
 
 -cut-
 
-This file is part of the Raspberry Pi Pico HAL for the HAGL graphics library:
-https://github.com/tuupola/hagl_pico_mipi
+This file is part of the Kendryte K210 HAL for the HAGL graphics library:
+https://github.com/tuupola/hagl_k210_mipi
 
 SPDX-License-Identifier: MIT
 

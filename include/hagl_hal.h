@@ -24,8 +24,8 @@ SOFTWARE.
 
 -cut-
 
-This file is part of the Raspberry Pi Pico HAL for the HAGL graphics library:
-https://github.com/tuupola/hagl_pico_mipi
+This file is part of the Kendryte K210 HAL for the HAGL graphics library:
+https://github.com/tuupola/hagl_k210_mipi
 
 SPDX-License-Identifier: MIT
 
@@ -59,8 +59,9 @@ typedef uint16_t color_t;
 #define MIPI_DISPLAY_GPIO_DC        (2)
 #define MIPI_DISPLAY_GPIO_RST       (3)
 
-#define MIPI_DISPLAY_SPI_CHANNEL             (0)
-#define MIPI_DISPLAY_SPI_SLAVE_SELECT        (3)
+#define MIPI_DISPLAY_SPI_CHANNEL    (0)
+#define MIPI_DISPLAY_SPI_SS         (0)
+#define MIPI_DISPLAY_SPI_SS_FUNC    (FUNC_SPI0_SS0)
 
 #ifndef MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ
 #define MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ     (64 * 1000 * 1000)

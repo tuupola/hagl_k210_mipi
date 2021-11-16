@@ -143,24 +143,26 @@ Below testing was done with Pimoroni Pico Display Pack. Double buffering refresh
 
 |                               | Single | Double    | Double DMA | Triple DMA |
 |-------------------------------|--------|-----------|------------|------------|
-| hagl_put_pixel()              | 104919 |    229668 |     328069 |     328080 |
-| hagl_draw_line()              |   1602 |     10688 |      15311 |      15313 |
-| hagl_draw_vline()             |  36079 |     37557 |      53787 |      53877 |
-| hagl_draw_hline()             |  36070 |     37622 |      54001 |      53951 |
-| hagl_draw_circle()            |   1610 |     14925 |      21412 |      21403 |
-| hagl_fill_circle()            |   1267 |      7201 |      10281 |      10320 |
-| hagl_draw_ellipse()           |    965 |      8179 |      11696 |      11715 |
-| hagl_fill_ellipse()           |    492 |      2790 |       4021 |       2005 |
-| hagl_draw_triangle()          |    535 |      3661 |       5230 |       5263 |
-| hagl_fill_triangle()          |    346 |       499 |        711 |        716 |
-| hagl_draw_rectangle()         |   8989 |     12168 |      17425 |      17420 |
-| hagl_fill_rectangle()         |    611 |      3979 |       5752 |       5739 |
-| hagl_draw_rounded_rectangle() |   3552 |     10802 |      15417 |      15468 |
-| hagl_fill_rounded_rectangle() |    569 |      3664 |       5271 |       5259 |
-| hagl_draw_polygon()           |    322 |      2211 |       3170 |       3170 |
-| hagl_fill_polygon()           |    178 |       221 |        315 |        319 |
-| hagl_put_char()               |  19664 |     19364 |      27753 |      27988 |
+| hagl_put_pixel()              |        |           |     328069 |     328080 |
+| hagl_draw_line()              |    653 |     16088 |      15311 |      15313 |
+| hagl_draw_vline()             |  29290 |     64063 |      53787 |      53877 |
+| hagl_draw_hline()             |  29320 |    165123 |      54001 |      53951 |
+| hagl_draw_circle()            |    848 |     24005 |      21412 |      21403 |
+| hagl_fill_circle()            |   1064 |      8388 |      10281 |      10320 |
+| hagl_draw_ellipse()           |    487 |     11910 |      11696 |      11715 |
+| hagl_fill_ellipse()           |    444 |      2910 |       4021 |       2005 |
+| hagl_draw_triangle()          |    216 |      5604 |       5230 |       5263 |
+| hagl_fill_triangle()          |    284 |      1454 |        711 |        716 |
+| hagl_draw_rectangle()         |   7524 |     20805 |      17425 |      17420 |
+| hagl_fill_rectangle()         |    330 |      1794 |       5752 |       5739 |
+| hagl_draw_rounded_rectangle() |   2181 |     18234 |      15417 |      15468 |
+| hagl_fill_rounded_rectangle() |    303 |      1688 |       5271 |       5259 |
+| hagl_draw_polygon()           |    131 |      3353 |       3170 |       3170 |
+| hagl_fill_polygon()           |    173 |       842 |        315 |        319 |
+| hagl_put_char()               |        |           |      27753 |      27988 |
 
 ## License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
+
+https://patchwork.kernel.org/project/linux-riscv/patch/20200212103432.660256-9-damien.lemoal@wdc.com/#23163585
