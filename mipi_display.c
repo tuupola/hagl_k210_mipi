@@ -81,6 +81,8 @@ static void mipi_display_write_data_dma(const uint8_t *buffer, size_t length)
     gpiohs_set_pin(MIPI_DISPLAY_GPIO_DC, GPIO_PV_HIGH);
 
     /* CS is handled automatically by the sending function. */
+    /* This function seems to wait until transfer is finished. Write your own one? */
+    /* https://github.com/kendryte/kendryte-standalone-sdk/blob/develop/lib/drivers/spi.c#L446 */
     spi_send_data_normal_dma(
         DMAC_CHANNEL0, MIPI_DISPLAY_SPI_CHANNEL, MIPI_DISPLAY_SPI_SS, buffer, length, SPI_TRANS_CHAR
     );
