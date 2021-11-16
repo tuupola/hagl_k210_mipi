@@ -53,9 +53,6 @@ typedef uint16_t color_t;
 #include "hagl_hal_single.h"
 #endif /* HAGL_HAL_USE_TRIPLE_BUFFER */
 
-/* Default config is ok for Pimoroni Pico Display Pack. When compiling */
-/* you can override these by including an user config header file first. */
-/* https://shop.pimoroni.com/products/pico-display-pack */
 #define MIPI_DISPLAY_GPIO_DC        (2)
 #define MIPI_DISPLAY_GPIO_RST       (3)
 
@@ -64,22 +61,22 @@ typedef uint16_t color_t;
 #define MIPI_DISPLAY_SPI_SS_FUNC    (FUNC_SPI0_SS0)
 
 #ifndef MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ
-#define MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ     (64 * 1000 * 1000)
+#define MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ     (65 * 1000 * 1000)
 #endif
 #ifndef MIPI_DISPLAY_PIN_CS
-#define MIPI_DISPLAY_PIN_CS         (36) // xx
+#define MIPI_DISPLAY_PIN_CS         (36)
 #endif
 #ifndef MIPI_DISPLAY_PIN_DC
-#define MIPI_DISPLAY_PIN_DC         (38) // xx
+#define MIPI_DISPLAY_PIN_DC         (38)
 #endif
 #ifndef MIPI_DISPLAY_PIN_RST
-#define MIPI_DISPLAY_PIN_RST        (37) // xx
+#define MIPI_DISPLAY_PIN_RST        (37)
 #endif
 #ifndef MIPI_DISPLAY_PIN_BL
 #define MIPI_DISPLAY_PIN_BL         (-1)
 #endif
 #ifndef MIPI_DISPLAY_PIN_CLK
-#define MIPI_DISPLAY_PIN_CLK        (39) // xx
+#define MIPI_DISPLAY_PIN_CLK        (39)
 #endif
 #ifndef MIPI_DISPLAY_PIN_MOSI
 #define MIPI_DISPLAY_PIN_MOSI       (-1)

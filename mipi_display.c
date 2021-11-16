@@ -162,7 +162,7 @@ static void mipi_display_spi_master_init()
     spi_init(MIPI_DISPLAY_SPI_CHANNEL, SPI_WORK_MODE_0, SPI_FF_OCTAL, 8, 0);
     spi_init_non_standard(MIPI_DISPLAY_SPI_CHANNEL, 8, 0, 0, SPI_AITM_AS_FRAME_FORMAT);
 
-    uint32_t hz = spi_set_clk_rate(MIPI_DISPLAY_SPI_CHANNEL, 10000000);
+    uint32_t hz = spi_set_clk_rate(MIPI_DISPLAY_SPI_CHANNEL, MIPI_DISPLAY_SPI_CLOCK_SPEED_HZ);
 
     hagl_hal_debug("Clock rate is set to %d Hz.\n", hz);
 }
